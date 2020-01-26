@@ -1,0 +1,27 @@
+{
+  "name": "pvss-v2",
+  "version": "1.0.0",
+  "description": "Pine View Support ``Slave'' 2--Electric Boogaloo",
+  "main": "bot.js",
+  "scripts": {
+    "test": "node bot.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MithicSpirit/pvss-v2.git"
+  },
+  "keywords": [
+    "discord",
+    "bot"
+  ],
+  "author": "MithicSpirit",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MithicSpirit/pvss-v2/issues"
+  },
+  "homepage": "https://github.com/MithicSpirit/pvss-v2#readme",
+  "dependencies": {
+    "discord.js": "^11.5.1",
+    "eslint": "^6.8.0"
+  }
+}
