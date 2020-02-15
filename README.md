@@ -7,4 +7,7 @@ Setup:
 }
 ```
 where `<num-here>` is the auth token for your bot.
-* Then, run `node bot.js` to start the bot.
+* Run `node bot.js` to start the bot.
+
+Utilization:
+Commands can be run by utilizing the prefix in the `./config.json` file, which is `.` by default.
