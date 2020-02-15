@@ -1,28 +1,31 @@
-module.exports = run();
+module.exports = {
+	'run': run(),
+	'commands': commands,
+};
 
-const getPerms = require('./checkPerms.js');
+const getPerms = require('./checkPerms.js').getPermLvl;
 const fs = require('fs');
 
-const commands = new Map();
-fs.readdir('./commands/', (error, files) => {
+const commands = fs.readdir('./commands/', (error, files) => {
 	if (error) console.log(error);
-	else {
-		for (const file in files) {
-			const command = require('./commands/' + file);
-			commands.set(file, command);
-		}
+
+	const cmdList = new Map();
+	files = files.filter(file => file.endsWith('.js'));
+	for (const file in files) {
+		const command = require('./commands/' + file);
+		cmdList.set(file, command);
 	}
-	return;
+
+	return cmdList;
 });
 
 
-const run = (cmd, args, message) => {
+const run = (cmd, args, message, client) => {
 	const command = commands.get(cmd);
-	if (command === undefined) {
+	if (command === undefined) return;
+
+	if (command.perms > getPerms(message.member)) {
 		message.reply('Insufficient permissions!');
 		return;
-	}
-	if (command === getPerms(message.author)) {
-		command.run(args, message);
-	}
+	} else return command.run(args, {'message': message, 'client': client});
 };

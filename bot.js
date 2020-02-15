@@ -1,9 +1,9 @@
 const Discord = require('discord.js');
 const auth = require('./auth.json');
-const runCommands = require('./commands.js');
+const runCommands = require('./commands.js').run;
 const config = require('./config.json');
 
-const client = new Discord.Client();
+const client = new Discord.Client({'disableEveryone': true});
 client.login(auth.token).catch(console.error);
 
 client.on('ready', () => {
@@ -15,5 +15,5 @@ client.on('message', message => {
 	if (!content.startsWith(config.prefix)) return;
 	const args = content.slice(config.prefix.length).split(/ +/);
 	const cmd = args.shift();
-	runCommands(cmd, args, message);
+	return runCommands(cmd, args, message, client);
 });

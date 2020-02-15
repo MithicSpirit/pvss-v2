@@ -7,7 +7,9 @@ Permission levels:
 4 = MEGAMOD, admin
 */
 
-module.exports = getPermLvl();
+module.exports = {
+	'getPermLvl': getPermLvl(),
+};
 
 const hierarchy = require('./roleHierarchy.json');
 
