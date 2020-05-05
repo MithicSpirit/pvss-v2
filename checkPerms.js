@@ -8,7 +8,7 @@ Permission levels:
 */
 
 module.exports = {
-	'getPermLvl': getPermLvl(),
+	getPermLvl: getPermLvl(),
 };
 
 const hierarchy = require('./roleHierarchy.json');

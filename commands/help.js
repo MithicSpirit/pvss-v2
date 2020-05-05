@@ -3,10 +3,10 @@ const prefix = require('../config.json').prefix;
 const getPerms = require('../checkPerms.js').getPermLvl;
 
 module.exports = {
-	'run': run(),
-	'help': help,
-	'perms': perms,
-	'desc': desc,
+	run: run(),
+	help: help,
+	perms: perms,
+	desc: desc,
 };
 
 const run = (args, info) => {
@@ -15,10 +15,11 @@ const run = (args, info) => {
 	if (!args.length) {
 		const cmds = [];
 		const perms = getPerms(user);
-		for (const command of commands) if (command[1].perms <= perms) cmds.append(command[1].desc);
+		for (const command of commands)
+			if (command[1].perms <= perms) cmds.append(command[1].desc);
 
 		let helpMessage = '';
-		cmds.forEach(cmd => {
+		cmds.forEach((cmd) => {
 			helpMessage += cmd + '\n';
 		});
 		chan.send(helpMessage.trim);
@@ -29,8 +30,7 @@ const run = (args, info) => {
 			const description = commands.get(cmd).desc;
 			chan.send(description);
 			return description;
-		}
-		else {
+		} else {
 			const errorMsg = `Command ${cmd} not found`;
 			chan.send(errorMsg);
 			return errorMsg;
