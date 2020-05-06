@@ -12,7 +12,7 @@ const tempMutes = (now, client) => {
 	const curr = require('./data/temp-mutes.json');
 	const fixList = [];
 	for (const i in curr) {
-		mute = curr[i];
+		const mute = curr[i];
 		if (mute.time < now) {
 			fixList.push(mute);
 			curr.splice(i, 1);
