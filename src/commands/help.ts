@@ -1,45 +1,35 @@
-const commands = require('../command.js').commands;
-const prefix = require('../config.json').prefix;
-const getPerms = require('../checkPerms.js').getPermLvl;
+import commands from '.';
+import { prefix } from '../../config.json';
+import getPerms from '../checkPerms.js';
+import { Message, Client } from 'discord.js';
 
-module.exports = {
-	run: run(),
-	help: help,
-	perms: perms,
-	desc: desc,
-};
+interface CommandInfo {
+	message: Message;
+	client: Client;
+}
 
-const run = (args, info) => {
+const run = (args: string[], info: CommandInfo): string => {
 	const user = info.message.member;
-	const chan = info.message.channel;
 	if (!args.length) {
-		const cmds = [];
+		const cmds: string[] = [];
 		const perms = getPerms(user);
 		for (const command of commands)
-			if (command[1].perms <= perms) cmds.append(command[1].desc);
+			if (command[1].perms <= perms) cmds.push(command[1].desc);
 
 		let helpMessage = '';
 		cmds.forEach((cmd) => {
 			helpMessage += cmd + '\n';
 		});
-		chan.send(helpMessage.trim);
+		helpMessage = helpMessage.trim();
 		return helpMessage;
 	} else if (args.length === 1) {
 		const cmd = args[0];
 		if (commands.has(cmd)) {
 			const description = commands.get(cmd).desc;
-			chan.send(description);
 			return description;
-		} else {
-			const errorMsg = `Command ${cmd} not found`;
-			chan.send(errorMsg);
-			return errorMsg;
-		}
-	} else {
-		const invalidSyntax = `Invalid syntax. Please use \`${prefix}help help\` for more information.`;
-		chan.send(invalidSyntax);
-		return invalidSyntax;
-	}
+		} else return `Command ${cmd} not found`;
+	} else
+		return `Invalid syntax. Please use \`${prefix}help help\` for more information.`;
 };
 
 const perms = 1;
@@ -51,3 +41,10 @@ Prints out a list of all commands you have the necessary permissions to utilize 
 Provides more in-depth information on the command \`<command_name>\`.`;
 
 const desc = `\`${prefix}help [command_name]\`: Provides information about commands.`;
+
+export default {
+	run,
+	help,
+	perms,
+	desc,
+};

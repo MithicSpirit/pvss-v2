@@ -1,27 +1,31 @@
 {
-  "name": "pvss-v2",
-  "version": "1.0.0",
-  "description": "Pine View Support ``Slave'' 2--Electric Boogaloo",
-  "main": "bot.js",
-  "scripts": {
-    "test": "node bot.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/MithicSpirit/pvss-v2.git"
-  },
-  "keywords": [
-    "discord",
-    "bot"
-  ],
-  "author": "MithicSpirit",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/MithicSpirit/pvss-v2/issues"
-  },
-  "homepage": "https://github.com/MithicSpirit/pvss-v2#readme",
-  "dependencies": {
-    "discord.js": "^12.2.0",
-    "eslint": "^6.8.0"
-  }
+	"name": "pvss-v2",
+	"version": "1.0.0",
+	"description": "Pine View Support ``Slave'' 2--Electric Boogaloo",
+	"main": "dist/src/bot.js",
+	"scripts": {
+		"test": "node bot.js"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/MithicSpirit/pvss-v2.git"
+	},
+	"keywords": [
+		"discord",
+		"bot"
+	],
+	"author": "MithicSpirit",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/MithicSpirit/pvss-v2/issues"
+	},
+	"homepage": "https://github.com/MithicSpirit/pvss-v2#readme",
+	"dependencies": {
+		"@types/node": "^13.13.5",
+		"@typescript-eslint/eslint-plugin": "^2.31.0",
+		"@typescript-eslint/parser": "^2.31.0",
+		"discord.js": "^12.2.0",
+		"eslint": "^6.8.0",
+		"typescript": "^3.8.3"
+	}
 }
