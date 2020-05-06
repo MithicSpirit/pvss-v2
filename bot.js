@@ -2,6 +2,7 @@ const Discord = require('discord.js');
 const auth = require('./auth.json');
 const runCommands = require('./commands.js').run;
 const config = require('./config.json');
+const checkBackground = require('./background.js').checkAll;
 
 const client = new Discord.Client({ disableEveryone: true });
 client.login(auth.token).catch(console.error);
@@ -17,3 +18,5 @@ client.on('message', (message) => {
 	const cmd = args.shift();
 	return runCommands(cmd, args, message, client);
 });
+
+setInterval(checkBackground(client), 1000);

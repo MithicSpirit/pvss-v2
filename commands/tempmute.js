@@ -17,6 +17,8 @@ const timeMults = new Map([
 ]);
 const timeRegex = new RegExp(`\\d*?[${timeMults.keys.join('')}]`, 'gyi');
 
+const muteRole = '688514323194445827';
+
 const run = (args, info) => {
 	if (args.length < 2) {
 		const invalidSyntax = `Invalid syntax. Please use \`${prefix}help tempmute\` for more information.`;
@@ -28,7 +30,7 @@ const run = (args, info) => {
 	const timeStr = args.join('');
 
 	let time = Date.now();
-	for (const i in timeRegex.exec(timeStr)) {
+	for (const i of timeRegex.exec(timeStr)) {
 		const mult = i.slice(-1);
 		const tBase = Number(i.slice(0, -1));
 		time += tBase * timeMults.get(mult);
@@ -39,9 +41,19 @@ const run = (args, info) => {
 		return invalidTime;
 	}
 
+	try {
+		const member = info.message.guild.member(user);
+		member.roles.add(muteRole);
+	} catch (error) {
+		const muteError = `There was an error with assigning the muted role to the user <${user}>`;
+		info.message.channel.send(muteError);
+		return muteError;
+	}
+
 	const muteObj = {
 		id: user,
 		time: time,
+		guildId: info.message.guild.id,
 	};
 
 	const mutes = require('../data/temp-mutes.json');
