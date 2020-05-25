@@ -8,7 +8,7 @@ const run = (args: string[], info): string => {
 	return; // Return message
 };
 
-const perms = 3;
+const perms = 5; // Perm level from src/checkPerms.ts
 
 const help = `\`${prefix}NAME <MANDATORY> [OPTIONAL]\`
 EXTENSIVE DESCRIPTION
