@@ -56,7 +56,7 @@ const perms = 3;
 const help = `\`${prefix}tempmute <@user> <mute_time>\`
 Mutes \`@user\` for \`mute_time\`. Supported units for \`mute_time\` are \`s\`, \`m\`, \`h\`, \`d\`, and \`w\`.`;
 
-const desc = `\`${prefix}help <@user> <mute_time>\`: Temporarily mutes a user.`;
+const desc = `\`${prefix}tempmute <@user> <mute_time>\`: Temporarily mutes a user.`;
 
 export default {
 	run,

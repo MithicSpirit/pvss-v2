@@ -16,6 +16,7 @@ client.on('ready', () => {
 client.on('message', (message) => {
 	const content = message.content;
 	if (!content.startsWith(prefix)) return;
+
 	const args = content.slice(prefix.length).split(/ +/);
 	const cmd = args.shift();
 	message.channel.send(runCommands(cmd, args, message, client));
