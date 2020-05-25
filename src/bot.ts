@@ -21,5 +21,5 @@ client.on('message', (message) => {
 	message.channel.send(runCommands(cmd, args, message, client));
 });
 
-setInterval(checkBackground, 5000, client);
-setInterval(mgr.backup, 8090);
+client.setInterval(checkBackground, 5000, client);
+client.setInterval(mgr.backup, 8090);
