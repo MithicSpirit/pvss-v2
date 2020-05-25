@@ -9,7 +9,7 @@ const run = (args: string[], info): string => {
 	if (channel != 'DM') return `\`${prefix}stop\` must be DMd to the bot.`;
 
 	mgr.backup();
-	info.message.reply('Bot stopping.');
+	info.message.channel.send('Bot stopping.');
 	info.client.destroy();
 	return;
 };
