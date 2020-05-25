@@ -1,10 +1,10 @@
 import data from './data.json';
 import fs from 'fs';
+import { Snowflake } from 'discord.js';
 
 interface Mute {
-	id: string;
+	id: Snowflake;
 	time: number;
-	guildId: string;
 }
 
 const tempMutes = (type: 'r' | 'w+' | 'w-', value?: Mute): Mute[] => {

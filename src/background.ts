@@ -1,21 +1,20 @@
 import { Client, Snowflake } from 'discord.js';
 import mgr from './valueManager';
+import { muteRoleID as muteRole, guildID } from '../config.json';
 
 interface Mute {
 	id: Snowflake;
 	time: number;
-	guildId: Snowflake;
 }
 
-const muteRole = '688514323194445827';
 const tempMutes = (now: number, client: Client): void => {
+	const guild = client.guilds.resolve(guildID);
 	const curr: Mute[] = mgr.tempMutes('r');
 	const fixList = curr.filter((mute) => mute.time < now);
 
 	for (const i of fixList) {
 		try {
 			mgr.tempMutes('w-', i);
-			const guild = client.guilds.resolve(i.guildId);
 			const member = guild.members.resolve(i.id);
 			member.roles.remove(muteRole);
 		} catch (error) {

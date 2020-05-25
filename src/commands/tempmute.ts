@@ -1,12 +1,6 @@
 import { prefix } from '../../config.json';
-import { Snowflake } from 'discord.js';
 import mgr from '../valueManager';
-
-interface Mute {
-	id: Snowflake;
-	time: number;
-	guildId: Snowflake;
-}
+import { muteRoleID as muteRole } from '../../config.json';
 
 const timeMults = new Map([
 	['s', 1000],
@@ -17,9 +11,8 @@ const timeMults = new Map([
 ]);
 const timeUnits = [...timeMults.keys()];
 const timeRegex = new RegExp(`\\d*?[${timeUnits.join('')}]`, 'gyi');
-const muteRole = '688514323194445827';
 
-const run = (args, info): string => {
+const run = (args: string[], info): string => {
 	if (args.length < 2)
 		return `Invalid syntax. Please use \`${prefix}help tempmute\` for more information.`;
 
@@ -52,7 +45,6 @@ const run = (args, info): string => {
 	const muteObj = {
 		id: user,
 		time: time,
-		guildId: info.message.guild.id,
 	};
 	mgr.tempMutes('w+', muteObj);
 
