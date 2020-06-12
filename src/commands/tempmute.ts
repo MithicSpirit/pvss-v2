@@ -1,8 +1,9 @@
 import mgr from '../valueManager';
 import { Message } from 'discord.js';
-import { config } from '../bot';
+import { config, client } from '../bot';
 const prefix = config.prefix;
 const muteRole = config.muteRoleID;
+const guild = client.guilds.resolve(config.guildID);
 
 const timeMults = new Map([
 	['s', 1000],
@@ -38,7 +39,7 @@ const run = (args: string[], message: Message): string => {
 	}
 
 	try {
-		const member = message.guild.member(user);
+		const member = guild.member(user);
 		member.roles.add(muteRole);
 	} catch (error) {
 		return `There was an error with assigning the muted role to the user <${user}>`;
