@@ -1,15 +1,11 @@
 import commands from '.';
-import { prefix } from '../../config.json';
 import getPerms from '../checkPerms.js';
-import { Message, Client } from 'discord.js';
+import { Message } from 'discord.js';
+import { config } from '../bot';
+const prefix = config.prefix;
 
-interface CommandInfo {
-	message: Message;
-	client: Client;
-}
-
-const run = (args: string[], info: CommandInfo): string => {
-	const user = info.message.member;
+const run = (args: string[], message: Message): string => {
+	const user = message.member;
 	if (!args.length) {
 		const cmds: string[] = [];
 		const perms = getPerms(user);

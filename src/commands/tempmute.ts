@@ -1,6 +1,8 @@
-import { prefix } from '../../config.json';
 import mgr from '../valueManager';
-import { muteRoleID as muteRole } from '../../config.json';
+import { Message } from 'discord.js';
+import { config } from '../bot';
+const prefix = config.prefix;
+const muteRole = config.muteRoleID;
 
 const timeMults = new Map([
 	['s', 1000],
@@ -12,7 +14,7 @@ const timeMults = new Map([
 const timeUnits = [...timeMults.keys()];
 const timeRegex = new RegExp(`\\d*?[${timeUnits.join('')}]`, 'gyi');
 
-const run = (args: string[], info): string => {
+const run = (args: string[], message: Message): string => {
 	if (args.length < 2)
 		return `Invalid syntax. Please use \`${prefix}help tempmute\` for more information.`;
 
@@ -36,7 +38,7 @@ const run = (args: string[], info): string => {
 	}
 
 	try {
-		const member = info.message.guild.member(user);
+		const member = message.guild.member(user);
 		member.roles.add(muteRole);
 	} catch (error) {
 		return `There was an error with assigning the muted role to the user <${user}>`;

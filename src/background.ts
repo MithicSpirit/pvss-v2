@@ -1,6 +1,8 @@
 import { Client, Snowflake } from 'discord.js';
 import mgr from './valueManager';
-import { muteRoleID as muteRole, guildID } from '../config.json';
+import { config } from './bot';
+const muteRole = config.muteRoleID;
+const guildID = config.guildID;
 
 interface Mute {
 	id: Snowflake;

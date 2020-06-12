@@ -1,16 +1,19 @@
-import { prefix } from '../../config.json';
 import mgr from '../valueManager';
+import { Message } from 'discord.js';
+import { client } from '../bot';
+import { config } from '../bot';
+const prefix = config.prefix;
 
-const run = (args: string[], info): string => {
+const run = (args: string[], message: Message): string => {
 	if (args.length != 0)
 		return `Invalid syntax. Please use \`${prefix}help stop\` for more information.`;
 
-	const channel = info.message.channel.type;
-	if (channel != 'DM') return `\`${prefix}stop\` must be DMd to the bot.`;
+	const channel = message.channel.type;
+	if (channel != 'dm') return `\`${prefix}stop\` must be DMd to the bot.`;
 
 	mgr.backup();
-	info.message.channel.send('Bot stopping.');
-	info.client.destroy();
+	message.channel.send('Bot stopping.');
+	client.destroy();
 	return;
 };
 

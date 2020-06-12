@@ -7,8 +7,9 @@ Permission levels:
 4 = MEGAMOD, admin
 */
 
-import { roleHierarchy as hierarchy } from '../config.json';
 import { GuildMember } from 'discord.js';
+import { config } from './bot';
+const hierarchy = config.roleHierarchy;
 
 const getHierarchyLvl = (member: GuildMember): number => {
 	const memberRoles = member.roles.cache;
