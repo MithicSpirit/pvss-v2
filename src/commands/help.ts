@@ -1,7 +1,7 @@
 import commands from '.';
-import getPerms from '../checkPerms.js';
+import getPerms from '../checkPerms';
 import { Message } from 'discord.js';
-import { config } from '../bot';
+import { config } from '../config';
 const prefix = config.prefix;
 
 const run = (args: string[], message: Message): string => {

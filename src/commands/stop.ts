@@ -1,7 +1,7 @@
 import mgr from '../valueManager';
 import { Message } from 'discord.js';
-import { client } from '../bot';
-import { config } from '../bot';
+import client from '../bot';
+import { config } from '../config';
 const prefix = config.prefix;
 
 const run = (args: string[], message: Message): string => {

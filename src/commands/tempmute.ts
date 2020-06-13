@@ -1,6 +1,7 @@
 import mgr from '../valueManager';
 import { Message } from 'discord.js';
-import { config, client } from '../bot';
+import client from '../bot';
+import { config } from '../config';
 const prefix = config.prefix;
 const muteRole = config.muteRoleID;
 const guild = client.guilds.resolve(config.guildID);

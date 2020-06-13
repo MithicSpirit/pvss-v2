@@ -1,5 +1,6 @@
 import { Message, Role, Snowflake } from 'discord.js';
-import { config, client } from '../bot';
+import client from '../bot';
+import { config } from '../config';
 import fs from 'fs';
 
 export interface Backup {

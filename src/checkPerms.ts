@@ -8,7 +8,7 @@ Permission levels:
 */
 
 import { GuildMember } from 'discord.js';
-import { config } from './bot';
+import { config } from './config';
 const hierarchy = config.roleHierarchy;
 
 const getHierarchyLvl = (member: GuildMember): number => {

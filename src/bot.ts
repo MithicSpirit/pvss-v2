@@ -4,7 +4,8 @@ import runCommands from './command';
 import checkBackground from './background';
 import mgr from './valueManager';
 
-export const client = new Discord.Client({ disableMentions: 'everyone' });
+const client = new Discord.Client({ disableMentions: 'everyone' });
+export default client;
 client.login(botToken).catch(console.error);
 
 client.on('ready', () => {

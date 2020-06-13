@@ -1,4 +1,4 @@
-import getPerms from './checkPerms.js';
+import getPerms from './checkPerms';
 import 'fs';
 import commands from './commands';
 import { Message } from 'discord.js';

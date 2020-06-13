@@ -1,6 +1,6 @@
 import { Client, Snowflake } from 'discord.js';
 import mgr from './valueManager';
-import { config } from './bot';
+import { config } from './config';
 const muteRole = config.muteRoleID;
 const guildID = config.guildID;
 
