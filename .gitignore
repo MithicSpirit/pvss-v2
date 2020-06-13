@@ -151,3 +151,4 @@ $RECYCLE.BIN/
 
 auth.json
 .vscode/**/*
+build.sh
