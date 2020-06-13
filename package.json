@@ -2,7 +2,7 @@
 	"name": "pvss-v2",
 	"version": "1.0.0",
 	"description": "Pine View Support ``Slave'' 2--Electric Boogaloo",
-	"main": "dist/src/bot.js",
+	"main": "dist/bot.js",
 	"scripts": {
 		"test": "node bot.js"
 	},
