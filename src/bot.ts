@@ -10,6 +10,7 @@ interface Config {
 	roleHierarchy: Record<Discord.Snowflake, number>;
 	guildID: Discord.Snowflake;
 	muteRoleID: Discord.Snowflake;
+	roleCategories: { name: string; id: Discord.Snowflake }[];
 }
 
 let auth: { token: Discord.Snowflake };
