@@ -4,7 +4,9 @@
 	"description": "Pine View Support ``Slave'' 2--Electric Boogaloo",
 	"main": "dist/bot.js",
 	"scripts": {
-		"test": "node bot.js"
+		"prestart": "rm -rf dist ; ./node_modules/typescript/bin/tsc",
+		"start": "node .",
+		"restart": "node ."
 	},
 	"repository": {
 		"type": "git",
