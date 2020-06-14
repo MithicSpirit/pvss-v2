@@ -5,8 +5,6 @@ import checkBackground from './background';
 import mgr from './valueManager';
 
 const client = new Discord.Client({ disableMentions: 'everyone' });
-console.log(JSON.stringify(botToken));
-client.login(botToken).catch(console.error);
 
 client.on('ready', () => {
 	client.on('message', (message) => {
@@ -22,3 +20,5 @@ client.on('ready', () => {
 	client.setInterval(mgr.backup, 8090);
 	console.log('Ready!');
 });
+
+client.login(botToken).catch(console.error);
