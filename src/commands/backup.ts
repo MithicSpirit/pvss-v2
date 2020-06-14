@@ -1,4 +1,12 @@
-import { Role, Snowflake, Client, Guild, Message } from 'discord.js';
+import {
+	Role,
+	Snowflake,
+	Client,
+	Guild,
+	Message,
+	GuildMember,
+	RoleResolvable,
+} from 'discord.js';
 import { config } from '../config';
 import fs from 'fs';
 
@@ -25,7 +33,11 @@ const getCategory = (role: Role, guild: Guild): string => {
 	return last;
 };
 
-const createBackup = (args: string[], client: Client): string => {
+const createBackup = (
+	args: string[],
+	message: Message,
+	client: Client,
+): string => {
 	const guild = client.guilds.resolve(config.guildID);
 	const filters: string[] = [];
 	for (const i of args) {
@@ -81,7 +93,11 @@ const createBackup = (args: string[], client: Client): string => {
 	return `Backup \`${fileName}\` completed!`;
 };
 
-const listBackups = (args: string[]): string => {
+const listBackups = (
+	args: string[],
+	message: Message,
+	client: Client,
+): string => {
 	const fileList = fs.readdirSync('./backups/', 'utf8');
 	if (args.length) {
 		fileList.filter((file) => {
@@ -104,12 +120,89 @@ const listBackups = (args: string[]): string => {
 	return 'No results found.';
 };
 
+const applyBackup = (
+	args: string[],
+	message: Message,
+	client: Client,
+): string => {
+	const guild = client.guilds.resolve(config.guildID);
+	const fileName = args.shift();
+	let file: string;
+	try {
+		file = fs.readFileSync(`./backups/${fileName}.json`, 'utf8');
+	} catch (e) {
+		console.log(e);
+		return `Backup \`${fileName}\` not found. Please use \`${prefix}backup list\` for a list of backups.`;
+	}
+	const backup: Backup = JSON.parse(file);
+
+	for (const filter of args)
+		if (!backup.filters.includes(filter))
+			return `Backup \`${fileName}\` does not contain all specified filters. View \`${prefix}backup info \`${fileName}\` for a list of present filters.`;
+
+	for (const user of backup.members) {
+		let member: GuildMember;
+		let stop = false;
+		guild.members.fetch(user.id).then(
+			(i) => (member = i),
+			(e) => {
+				console.error(e);
+				stop = true;
+				message.channel.send(
+					`Error fetching user \`${user.id}\`. Will continue.`,
+				);
+			},
+		);
+		if (stop) continue;
+
+		for (const filter of args) {
+			if (filter !== 'nicks') {
+				for (const roleID of user.roles[filter]) {
+					let role: Role;
+					let stop = false;
+					guild.roles.fetch(roleID).then(
+						(i) => (role = i),
+						(e) => {
+							console.error(e);
+							stop = true;
+							message.channel.send(
+								`Error fetching role \`${roleID}\`. Will continue.`,
+							);
+						},
+					);
+					if (stop) continue;
+					if (!member.manageable || !role.managed || !role.editable) {
+						message.channel.send(
+							`I lack sufficient permissions to assign <@&${roleID}> to <@${user.id}>. Will continue.`,
+						);
+						continue;
+					}
+					member.roles.add(role);
+				}
+			} else {
+				const nick = user.nick;
+				if (!nick) continue;
+				if (!member.manageable) {
+					message.channel.send(
+						`I lack sufficient permissions to rename <@${user.id}> to \`${nick}\`. Will continue.`,
+					);
+					continue;
+				}
+				member.setNickname(nick);
+			}
+		}
+	}
+
+	return `Finished loading backup \`${fileName}\`.`;
+};
+
 const functions: Map<
 	string,
-	(args: string[], client: Client) => string
+	(args: string[], message: Message, client: Client) => string
 > = new Map([
 	['create', createBackup],
 	['list', listBackups],
+	['apply', applyBackup],
 ]);
 
 const run = (args: string[], message: Message, client: Client): string => {
@@ -118,7 +211,7 @@ const run = (args: string[], message: Message, client: Client): string => {
 
 	const type = args.shift();
 	const func = functions[type];
-	if (func) return func(args, client);
+	if (func) return func(args, message, client);
 	else
 		return `Invalid syntax. Please use \`${prefix}help backup\` for more information.`;
 };
@@ -131,11 +224,15 @@ for (const i of categories) {
 }
 
 const help = `\`${prefix}backup create [category] [...]\`
-Backs up roles and/or nicknames for all members. What is backed up can be selected with \`category\`,
+Backs up roles and/or nicknames for all members. What is backed up can be selected with \`category\`.
 Supported values for \`category\` are ${categoryHelpList}and \`nicks\`.
 
 \`${prefix}backup list [category] [...]\`
 Lists available backup names. Results can be filtered with \`category\`.
+Supported values for \`category\` are ${categoryHelpList}and \`nicks\`.
+
+\`${prefix}backup apply <backup-name> [category] [...]\`
+Loads backup \`backup-name\`. What is loaded can be selected with \`category\`.
 Supported values for \`category\` are ${categoryHelpList}and \`nicks\`.`;
 
 const desc = `\`${prefix}backup <operation> [category] [...]\`: Manages backups.`;
