@@ -130,11 +130,15 @@ for (const i of categories) {
 	categoryHelpList += `\`${i.name}\`, `;
 }
 
-const help = `\`${prefix}backup [category] [...]\`
-Backs up roles and/or nicknames for all members. What is backed up can be selected with \`category\`
-Supported values for \`category\` are ${categoryHelpList}and \`nicks\``;
+const help = `\`${prefix}backup create [category] [...]\`
+Backs up roles and/or nicknames for all members. What is backed up can be selected with \`category\`,
+Supported values for \`category\` are ${categoryHelpList}and \`nicks\`.
 
-const desc = `\`${prefix}backup [category] [...]\`: Backs up all members' roles and/or nicknames.`;
+\`${prefix}backup list [category] [...]\`
+Lists available backup names. Results can be filtered with \`category\`.
+Supported values for \`category\` are ${categoryHelpList}and \`nicks\`.`;
+
+const desc = `\`${prefix}backup <operation> [category] [...]\`: Manages backups.`;
 
 export default {
 	run,
