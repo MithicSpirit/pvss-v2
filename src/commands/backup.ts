@@ -61,6 +61,11 @@ const createBackup = (args: string[], client: Client): string => {
 		}
 	}
 
+	if (!backup.filters.length) {
+		for (const i of categories) backup.filters.push(i.name);
+		backup.filters.push('nicks');
+	}
+
 	const date = new Date();
 	const fileName =
 		`${date.getUTCFullYear()}.${date.getUTCMonth()}.${date.getUTCDay()}` +
@@ -76,10 +81,36 @@ const createBackup = (args: string[], client: Client): string => {
 	return `Backup \`${fileName}\` completed!`;
 };
 
+const listBackups = (args: string[]): string => {
+	const fileList = fs.readdirSync('./backups/', 'utf8');
+	if (args.length) {
+		fileList.filter((file) => {
+			const types: string[] = JSON.parse(
+				fs.readFileSync(`./backups/${file}`, 'utf8'),
+			).filters;
+
+			let all = true;
+			for (const type of args) {
+				if (!types.includes(type)) all = false;
+			}
+			return all;
+		});
+	}
+	if (fileList.length) {
+		let result = '';
+		for (const i of fileList) result += i.slice(0, -4) + '\n';
+		return result.trim();
+	}
+	return 'No results found.';
+};
+
 const functions: Map<
 	string,
 	(args: string[], client: Client) => string
-> = new Map([['create', createBackup]]);
+> = new Map([
+	['create', createBackup],
+	['list', listBackups],
+]);
 
 const run = (args: string[], message: Message, client: Client): string => {
 	if (args.length < 1)
