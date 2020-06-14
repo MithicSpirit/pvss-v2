@@ -25,7 +25,7 @@ const getCategory = (role: Role, guild: Guild): string => {
 	return last;
 };
 
-const run = (args: string[], message: Message, client: Client): string => {
+const createBackup = (args: string[], client: Client): string => {
 	const guild = client.guilds.resolve(config.guildID);
 	const filters: string[] = [];
 	for (const i of args) {
@@ -62,10 +62,34 @@ const run = (args: string[], message: Message, client: Client): string => {
 	}
 
 	const date = new Date();
-	const fileName = `${date.getUTCFullYear()}.${date.getUTCMonth()}.${date.getUTCDay()} ${date.getUTCHours()}:${date.getUTCMinutes()}:${date.getUTCSeconds()}.${date.getUTCMilliseconds()}.json`;
-	fs.writeFileSync(`./backups/${fileName}`, JSON.stringify(backup), 'utf8');
+	const fileName =
+		`${date.getUTCFullYear()}.${date.getUTCMonth()}.${date.getUTCDay()}` +
+		`${date.getUTCHours()}:${date.getUTCMinutes()}:${date.getUTCSeconds()}` +
+		`.${date.getUTCMilliseconds()}`;
 
-	return 'Backup completed!';
+	fs.writeFileSync(
+		`./backups/${fileName}.json`,
+		JSON.stringify(backup),
+		'utf8',
+	);
+
+	return `Backup \`${fileName}\` completed!`;
+};
+
+const functions: Map<
+	string,
+	(args: string[], client: Client) => string
+> = new Map([['create', createBackup]]);
+
+const run = (args: string[], message: Message, client: Client): string => {
+	if (args.length < 1)
+		return `Invalid syntax. Please use \`${prefix}help backup\` for more information.`;
+
+	const type = args.shift();
+	const func = functions[type];
+	if (func) return func(args, client);
+	else
+		return `Invalid syntax. Please use \`${prefix}help backup\` for more information.`;
 };
 
 const perms = 4; // Perm level from src/checkPerms.ts
