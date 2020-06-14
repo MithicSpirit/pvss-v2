@@ -1,4 +1,4 @@
-import { authToken as botToken, config } from './config';
+import { auth as botToken, config } from './config';
 import * as Discord from 'discord.js';
 import runCommands from './command';
 import checkBackground from './background';

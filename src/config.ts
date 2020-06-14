@@ -9,33 +9,8 @@ interface Config {
 	roleCategories: { name: string; id: Snowflake }[];
 }
 
-let auth: { token: Snowflake };
-fs.readFile('./auth.json', 'utf8', (error, content) => {
-	try {
-		if (error) throw error;
-		auth = JSON.parse(content);
-	} catch (e) {
-		console.log(e);
-		console.log(
-			'\nThe authentication token was not imported correctly; please restart.',
-		);
-		return;
-	}
-	console.log('Authentication token successfully imported!');
-	return;
-});
-export const authToken = auth.token;
+export const auth: Snowflake = fs.readFileSync('./auth', 'utf8').trim();
 
-export let config: Config;
-fs.readFile('./auth.json', 'utf8', (error, content) => {
-	try {
-		if (error) throw error;
-		config = JSON.parse(content);
-	} catch (e) {
-		console.log(e);
-		console.log('\nThe config was not imported correctly; please restart.');
-		return;
-	}
-	console.log('Config successfully imported!');
-	return;
-});
+export const config: Config = JSON.parse(
+	fs.readFileSync('./config.json', 'utf8'),
+);

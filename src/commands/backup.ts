@@ -64,14 +64,7 @@ const run = (args: string[], message: Message): string => {
 
 	const date = new Date();
 	const fileName = `${date.getUTCFullYear()}.${date.getUTCMonth()}.${date.getUTCDay()} ${date.getUTCHours()}:${date.getUTCMinutes()}:${date.getUTCSeconds()}.${date.getUTCMilliseconds()}.json`;
-	fs.writeFile(
-		`./backups/${fileName}`,
-		JSON.stringify(backup),
-		'utf8',
-		(error) => {
-			if (error) return 'Error while writing backup.';
-		},
-	);
+	fs.writeFileSync(`./backups/${fileName}`, JSON.stringify(backup), 'utf8');
 
 	return 'Backup completed!';
 };

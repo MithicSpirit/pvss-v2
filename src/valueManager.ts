@@ -9,22 +9,7 @@ interface Data {
 	tempMutes: Mute[];
 }
 
-let importSuccess = false;
-let data: Data;
-
-fs.readFile('./data.json', 'utf8', (error, content) => {
-	try {
-		if (error) throw error;
-		data = JSON.parse(content);
-	} catch (e) {
-		console.log(e);
-		console.log('\nData was not imported correctly; please restart.');
-		return;
-	}
-	console.log('Data successfully imported!');
-	importSuccess = true;
-	return;
-});
+const data: Data = JSON.parse(fs.readFileSync('./data.json', 'utf8'));
 
 const tempMutes = (type: 'r' | 'w+' | 'w-', value?: Mute): Mute[] => {
 	try {
@@ -40,15 +25,7 @@ const tempMutes = (type: 'r' | 'w+' | 'w-', value?: Mute): Mute[] => {
 	return data.tempMutes;
 };
 
-const backup = (): void => {
-	if (!importSuccess)
-		console.log('\nData was not imported correctly; please restart.');
-	else {
-		fs.writeFile('./data.json', JSON.stringify(data), 'utf8', (error) => {
-			if (error) console.log(error);
-			else console.log('Backed up.');
-		});
-	}
-};
+const backup = (): void =>
+	fs.writeFileSync('./data.json', JSON.stringify(data), 'utf8');
 
 export default { tempMutes, backup };
