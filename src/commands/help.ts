@@ -1,10 +1,10 @@
 import commands from '.';
 import getPerms from '../checkPerms';
-import { Message } from 'discord.js';
+import { Message, Client } from 'discord.js';
 import { config } from '../config';
 const prefix = config.prefix;
 
-const run = (args: string[], message: Message): string => {
+const run = (args: string[], message: Message, client: Client): string => {
 	const user = message.member;
 	if (!args.length) {
 		const cmds: string[] = [];

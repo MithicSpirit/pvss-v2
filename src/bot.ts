@@ -5,7 +5,7 @@ import checkBackground from './background';
 import mgr from './valueManager';
 
 const client = new Discord.Client({ disableMentions: 'everyone' });
-export default client;
+console.log(JSON.stringify(botToken));
 client.login(botToken).catch(console.error);
 
 client.on('ready', () => {
@@ -15,7 +15,7 @@ client.on('ready', () => {
 
 		const args = content.slice(config.prefix.length).split(/ +/);
 		const cmd = args.shift();
-		message.channel.send(runCommands(cmd, args, message));
+		message.channel.send(runCommands(cmd, args, message, client));
 	});
 
 	client.setInterval(checkBackground, 5000, client);

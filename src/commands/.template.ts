@@ -1,8 +1,8 @@
-import { Message } from 'discord.js';
+import { Message, Client } from 'discord.js';
 import { config } from '../config';
 const prefix = config.prefix;
 
-const run = (args: string[], message: Message): string => {
+const run = (args: string[], message: Message, client: Client): string => {
 	if (args.length < 0)
 		// MIN ARGUMENT LENGTH
 		return `Invalid syntax. Please use \`${prefix}help NAME\` for more information.`;

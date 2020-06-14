@@ -1,10 +1,8 @@
 import mgr from '../valueManager';
-import { Message } from 'discord.js';
-import client from '../bot';
+import { Client, Message } from 'discord.js';
 import { config } from '../config';
 const prefix = config.prefix;
 const muteRole = config.muteRoleID;
-const guild = client.guilds.resolve(config.guildID);
 
 const timeMults = new Map([
 	['s', 1000],
@@ -16,7 +14,9 @@ const timeMults = new Map([
 const timeUnits = [...timeMults.keys()];
 const timeRegex = new RegExp(`\\d*?[${timeUnits.join('')}]`, 'gyi');
 
-const run = (args: string[], message: Message): string => {
+const run = (args: string[], message: Message, client: Client): string => {
+	const guild = client.guilds.resolve(config.guildID);
+
 	if (args.length < 2)
 		return `Invalid syntax. Please use \`${prefix}help tempmute\` for more information.`;
 

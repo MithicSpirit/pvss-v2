@@ -1,10 +1,9 @@
 import mgr from '../valueManager';
-import { Message } from 'discord.js';
-import client from '../bot';
+import { Message, Client } from 'discord.js';
 import { config } from '../config';
 const prefix = config.prefix;
 
-const run = (args: string[], message: Message): string => {
+const run = (args: string[], message: Message, client: Client): string => {
 	if (args.length != 0)
 		return `Invalid syntax. Please use \`${prefix}help stop\` for more information.`;
 

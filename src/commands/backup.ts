@@ -1,7 +1,9 @@
-import { Message, Role, Snowflake } from 'discord.js';
-import client from '../bot';
+import { Role, Snowflake, Client, Guild, Message } from 'discord.js';
 import { config } from '../config';
 import fs from 'fs';
+
+const prefix = config.prefix;
+const categories = config.roleCategories;
 
 export interface Backup {
 	filters: string[];
@@ -12,11 +14,7 @@ export interface Backup {
 	}[];
 }
 
-const prefix = config.prefix;
-const categories = config.roleCategories;
-const guild = client.guilds.resolve(config.guildID);
-
-const getCategory = (role: Role): string => {
+const getCategory = (role: Role, guild: Guild): string => {
 	let last: string;
 	for (const i of categories) {
 		const compare = guild.roles.resolve(i.id).comparePositionTo(role);
@@ -27,7 +25,8 @@ const getCategory = (role: Role): string => {
 	return last;
 };
 
-const run = (args: string[], message: Message): string => {
+const run = (args: string[], message: Message, client: Client): string => {
+	const guild = client.guilds.resolve(config.guildID);
 	const filters: string[] = [];
 	for (const i of args) {
 		const cat = categories[i];
@@ -45,7 +44,7 @@ const run = (args: string[], message: Message): string => {
 
 			const roles = i[1].roles.cache;
 			for (const j of roles) {
-				const cat = getCategory(j[1]);
+				const cat = getCategory(j[1], guild);
 				if (filters.length && !filters.includes(cat)) continue;
 				if (!member.roles[cat]) member.roles[cat] = [];
 				member.roles[cat].push(j[1].id);
