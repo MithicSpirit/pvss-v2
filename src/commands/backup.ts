@@ -120,6 +120,31 @@ const listBackups = (
 	return 'No results found.';
 };
 
+const backupInfo = (
+	args: string[],
+	message: Message,
+	client: Client,
+): string => {
+	if (args.length !== 1)
+		return `Invalid syntax. Please use \`${prefix}help backup\` for more information.`;
+
+	const fileName = args[0];
+	let file: string;
+	try {
+		file = fs.readFileSync(`./backups/${fileName}.json`, 'utf8');
+	} catch (e) {
+		console.error(e);
+		return `Backup \`${fileName}\` not found. Please use \`${prefix}backup list\` for a list of backups.`;
+	}
+	const backup: Backup = JSON.parse(file);
+
+	let msg = `\`${fileName}\`:`;
+	for (const i of backup.filters) {
+		msg += '\n  `' + i + '`';
+	}
+	return msg.trim();
+};
+
 const applyBackup = (
 	args: string[],
 	message: Message,
@@ -202,6 +227,7 @@ const functions: Map<
 > = new Map([
 	['create', createBackup],
 	['list', listBackups],
+	['info', backupInfo],
 	['apply', applyBackup],
 ]);
 
@@ -226,14 +252,20 @@ for (const i of categories) {
 const help = `\`${prefix}backup create [category] [...]\`
 Backs up roles and/or nicknames for all members. What is backed up can be selected with \`category\`.
 Supported values for \`category\` are ${categoryHelpList}and \`nicks\`.
+This command may take a while to execute.
 
 \`${prefix}backup list [category] [...]\`
 Lists available backup names. Results can be filtered with \`category\`.
 Supported values for \`category\` are ${categoryHelpList}and \`nicks\`.
 
+\`${prefix}backup info <backup-name>\`
+Provides info on what categories are in the backup \`backup-name\`.
+
 \`${prefix}backup apply <backup-name> [category] [...]\`
 Loads backup \`backup-name\`. What is loaded can be selected with \`category\`.
-Supported values for \`category\` are ${categoryHelpList}and \`nicks\`.`;
+Supported values for \`category\` are ${categoryHelpList}and \`nicks\`.
+**Warning**: This command can be very verbose with error. It is recommended that the bot is granted maximum permissions (i.e.: role with admin at the top of the role list) to reduce this issue.
+This command may also take a while to execute.`;
 
 const desc = `\`${prefix}backup <operation> [category] [...]\`: Manages backups.`;
 
