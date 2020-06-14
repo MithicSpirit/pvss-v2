@@ -9,6 +9,11 @@
 -   Run `npx tsc` to compile files to javascript (placed in `./dist/`).
 -   Run `node .` to start the bot.
 
+#### Note:
+
+If on linux you can also use the `npm start` script as a shorthand for compiling
+and starting the bot.
+
 ## Utilization:
 
 Commands can be run by utilizing the prefix in the `./config.json` file, which
