@@ -21,7 +21,7 @@ const run = (args: string[], message: Message, client: Client): string => {
 	} else if (args.length === 1) {
 		const cmd = args[0];
 		if (commands.has(cmd)) {
-			const description = commands.get(cmd).desc;
+			const description = commands.get(cmd).help;
 			return description;
 		} else return `Command \`${cmd}\` not found`;
 	} else
