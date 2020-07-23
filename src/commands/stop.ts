@@ -11,9 +11,10 @@ const run = (args: string[], message: Message, client: Client): string => {
 	if (channel != 'dm') return `\`${prefix}stop\` must be DMd to the bot.`;
 
 	mgr.backup();
-	message.channel.send('Bot stopping.');
-	client.destroy();
-	return;
+	message.channel.send('Bot stopping.').then(() => {
+		client.destroy();
+		process.exit(0);
+	});
 };
 
 const perms = 4;
