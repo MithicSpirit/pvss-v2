@@ -8,7 +8,7 @@ const run = (args: string[], message: Message, client: Client): string => {
 	const user = message.member;
 	if (!args.length) {
 		const cmds: string[] = [];
-		const perms = getPerms(user);
+		const perms = getPerms(user.user, client);
 		for (const command of commands)
 			if (command[1].perms <= perms) cmds.push(command[1].desc);
 
@@ -23,7 +23,7 @@ const run = (args: string[], message: Message, client: Client): string => {
 		if (commands.has(cmd)) {
 			const description = commands.get(cmd).desc;
 			return description;
-		} else return `Command ${cmd} not found`;
+		} else return `Command \`${cmd}\` not found`;
 	} else
 		return `Invalid syntax. Please use \`${prefix}help help\` for more information.`;
 };

@@ -5,9 +5,10 @@ Permission levels:
 2 = Trusted Perms
 3 = MOD
 4 = MEGAMOD, admin
+5 = Server owner
 */
 
-import { GuildMember } from 'discord.js';
+import { GuildMember, User, Client } from 'discord.js';
 import { config } from './config';
 const hierarchy = config.roleHierarchy;
 
@@ -20,11 +21,15 @@ const getHierarchyLvl = (member: GuildMember): number => {
 	return permLvl;
 };
 
-export default (member: GuildMember): number => {
+export default (user: User, client: Client): number => {
+	const member: GuildMember = client.guilds
+		.resolve(config.guildID)
+		.member(user);
+
+	if (member === member.guild.owner) return 5;
+
 	const perms = member.permissions;
-	if (perms.has('ADMINISTRATOR')) {
-		return 4;
-	} else {
-		return getHierarchyLvl(member);
-	}
+	if (perms.has('ADMINISTRATOR')) return 4;
+
+	return getHierarchyLvl(member);
 };

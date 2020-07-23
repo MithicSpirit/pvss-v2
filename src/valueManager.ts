@@ -19,7 +19,7 @@ const tempMutes = (type: 'r' | 'w+' | 'w-', value?: Mute): Mute[] => {
 			data.tempMutes.splice(ind, 1);
 		}
 	} catch (error) {
-		console.log(error);
+		console.error(error);
 		throw error;
 	}
 	return data.tempMutes;

@@ -17,7 +17,7 @@ client.on('ready', () => {
 	});
 
 	client.setInterval(checkBackground, 5000, client);
-	client.setInterval(mgr.backup, 8090);
+	client.setInterval(mgr.backup, 5101);
 	console.log('Ready!');
 });
 

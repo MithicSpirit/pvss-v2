@@ -1,5 +1,5 @@
 import mgr from '../valueManager';
-import { Client, Message } from 'discord.js';
+import { Client, Message, Snowflake } from 'discord.js';
 import { config } from '../config';
 const prefix = config.prefix;
 const muteRole = config.muteRoleID;
@@ -20,7 +20,7 @@ const run = (args: string[], message: Message, client: Client): string => {
 	if (args.length < 2)
 		return `Invalid syntax. Please use \`${prefix}help tempmute\` for more information.`;
 
-	const user = args.shift();
+	const user: Snowflake = /<@!(\d+)>/.exec(args.shift())[1];
 	const timeStr = args.join('');
 
 	let time = Date.now();
@@ -35,7 +35,7 @@ const run = (args: string[], message: Message, client: Client): string => {
 	const ind = mutes.findIndex((mute) => mute.id === user);
 	if (ind !== -1) {
 		if (mutes[ind].time > time)
-			return `User <${user}> is already tempmuted for more time than ${timeStr}.`;
+			return `User <@${user}> is already tempmuted for more time than ${timeStr}.`;
 		else mgr.tempMutes('w-', mutes[ind]);
 	}
 
@@ -43,7 +43,7 @@ const run = (args: string[], message: Message, client: Client): string => {
 		const member = guild.member(user);
 		member.roles.add(muteRole);
 	} catch (error) {
-		return `There was an error with assigning the muted role to the user <${user}>`;
+		return `There was an error with assigning the muted role to the user <@${user}>`;
 	}
 
 	const muteObj = {
@@ -52,7 +52,7 @@ const run = (args: string[], message: Message, client: Client): string => {
 	};
 	mgr.tempMutes('w+', muteObj);
 
-	return `User <${user}> has been muted for ${timeStr}`;
+	return `User <@${user}> has been muted for ${timeStr}`;
 };
 
 const perms = 3;

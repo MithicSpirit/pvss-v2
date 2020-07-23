@@ -12,7 +12,7 @@ export default (
 	const command = commands.get(cmd);
 	if (command === undefined) throw 'Command DNE';
 
-	if (command.perms > getPerms(message.member))
+	if (command.perms > getPerms(message.author, client))
 		return 'Insufficient permissions!';
 	else return command.run(args, message, client);
 };

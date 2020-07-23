@@ -10,7 +10,7 @@ const run = (args: string[], message: Message, client: Client): string => {
 	return; // Return message
 };
 
-const perms = 5; // Perm level from src/checkPerms.ts
+const perms = Infinity; // Perm level from src/checkPerms.ts
 
 const help = `\`${prefix}NAME <MANDATORY> [OPTIONAL]\`
 EXTENSIVE DESCRIPTION

@@ -5,7 +5,6 @@ import {
 	Guild,
 	Message,
 	GuildMember,
-	RoleResolvable,
 } from 'discord.js';
 import { config } from '../config';
 import fs from 'fs';
@@ -68,7 +67,7 @@ const createBackup = (
 
 			backup.members.push(member);
 		} catch (e) {
-			console.log(e);
+			console.error(e);
 			return `Error while backing up <@${i[1].id}>.`;
 		}
 	}
@@ -156,7 +155,7 @@ const applyBackup = (
 	try {
 		file = fs.readFileSync(`./backups/${fileName}.json`, 'utf8');
 	} catch (e) {
-		console.log(e);
+		console.error(e);
 		return `Backup \`${fileName}\` not found. Please use \`${prefix}backup list\` for a list of backups.`;
 	}
 	const backup: Backup = JSON.parse(file);

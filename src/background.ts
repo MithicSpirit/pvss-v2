@@ -20,7 +20,7 @@ const tempMutes = (now: number, client: Client): void => {
 			const member = guild.members.resolve(i.id);
 			member.roles.remove(muteRole);
 		} catch (error) {
-			console.log(error);
+			console.error(error);
 		}
 	}
 };
