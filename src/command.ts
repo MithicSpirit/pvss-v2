@@ -10,7 +10,8 @@ export default (
 	client: Client,
 ): string => {
 	const command = commands.get(cmd);
-	if (command === undefined) throw 'Command DNE';
+	if (command === undefined)
+		return `The command \`${cmd}\` does not exist. Please use \`.help\` for a list of available commands.`;
 
 	if (command.perms > getPerms(message.author, client))
 		return 'Insufficient permissions!';

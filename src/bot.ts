@@ -13,7 +13,9 @@ client.on('ready', () => {
 
 		const args = content.slice(config.prefix.length).split(/ +/);
 		const cmd = args.shift();
-		message.channel.send(runCommands(cmd, args, message, client));
+		message.channel
+			.send(runCommands(cmd, args, message, client))
+			.catch(console.error);
 	});
 
 	client.setInterval(checkBackground, 5000, client);
