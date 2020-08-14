@@ -1,11 +1,4 @@
-import {
-	Role,
-	Snowflake,
-	Client,
-	Guild,
-	Message,
-	GuildMember,
-} from 'discord.js';
+import { Role, Snowflake, Client, Guild, Message } from 'discord.js';
 import { config } from '../config';
 import fs from 'fs';
 
@@ -40,8 +33,8 @@ const createBackup = (
 	const guild = client.guilds.resolve(config.guildID);
 	const filters: string[] = [];
 	for (const i of args) {
-		const cat = categories[i];
-		if (cat) filters.push(cat);
+		const cat = categories.find((j) => j.name === i);
+		if (cat) filters.push(cat.name);
 		else if (i === 'nicks') filters.push('nicks');
 		else
 			return `Invalid category. Please use \`${prefix}help backup\` for a list of supported categories.`;
@@ -55,14 +48,15 @@ const createBackup = (
 
 			const roles = i[1].roles.cache;
 			for (const j of roles) {
+				if (j[1].name === '@everyone') continue;
 				const cat = getCategory(j[1], guild);
 				if (filters.length && !filters.includes(cat)) continue;
 				if (!member.roles[cat]) member.roles[cat] = [];
 				member.roles[cat].push(j[1].id);
 			}
 
-			if (filters.length || filters.includes('nicks')) {
-				member['nick'] = i[1].nickname;
+			if (!filters.length || filters.includes('nicks')) {
+				member['nick'] = i[1].displayName;
 			}
 
 			backup.members.push(member);
@@ -78,10 +72,7 @@ const createBackup = (
 	}
 
 	const date = new Date();
-	const fileName =
-		`${date.getUTCFullYear()}.${date.getUTCMonth()}.${date.getUTCDay()}` +
-		`${date.getUTCHours()}:${date.getUTCMinutes()}:${date.getUTCSeconds()}` +
-		`.${date.getUTCMilliseconds()}`;
+	const fileName = date.toISOString();
 
 	fs.writeFileSync(
 		`./backups/${fileName}.json`,
@@ -113,7 +104,7 @@ const listBackups = (
 	}
 	if (fileList.length) {
 		let result = '';
-		for (const i of fileList) result += i.slice(0, -4) + '\n';
+		for (const i of fileList) result += `\`${i.slice(0, -5)}\`\n`;
 		return result.trim();
 	}
 	return 'No results found.';
@@ -160,64 +151,70 @@ const applyBackup = (
 	}
 	const backup: Backup = JSON.parse(file);
 
-	for (const filter of args)
+	let filters = [...args];
+	for (const filter of filters)
 		if (!backup.filters.includes(filter))
 			return `Backup \`${fileName}\` does not contain all specified filters. View \`${prefix}backup info \`${fileName}\` for a list of present filters.`;
+	if (!filters.length) {
+		filters = backup.filters;
+	}
 
 	for (const user of backup.members) {
-		let member: GuildMember;
-		let stop = false;
 		guild.members.fetch(user.id).then(
-			(i) => (member = i),
+			(member) => {
+				for (const filter of filters) {
+					if (filter !== 'nicks') {
+						try {
+							for (const roleID of user.roles[filter]) {
+								let role: Role;
+								guild.roles.fetch(roleID).then(
+									(role) => {
+										if (
+											!member.manageable ||
+											!role.editable
+										) {
+											message.channel.send(
+												`I lack sufficient permissions to assign \`${role.name}\` to <@${user.id}>. Will continue.`,
+											);
+										} else
+											member.roles
+												.add(role)
+												.catch(console.error);
+									},
+									(e) => {
+										console.error(e);
+										message.channel.send(
+											`Error fetching role \`${roleID}\`. Will continue.`,
+										);
+									},
+								);
+							}
+						} catch {
+							continue;
+						}
+					} else {
+						const nick = user.nick;
+						if (!nick) continue;
+						if (!member.manageable) {
+							message.channel.send(
+								`I lack sufficient permissions to rename <@${user.id}> to \`${nick}\`. Will continue.`,
+							);
+							continue;
+						}
+						member.setNickname(nick);
+					}
+				}
+			},
 			(e) => {
 				console.error(e);
-				stop = true;
 				message.channel.send(
 					`Error fetching user \`${user.id}\`. Will continue.`,
 				);
 			},
 		);
-		if (stop) continue;
-
-		for (const filter of args) {
-			if (filter !== 'nicks') {
-				for (const roleID of user.roles[filter]) {
-					let role: Role;
-					let stop = false;
-					guild.roles.fetch(roleID).then(
-						(i) => (role = i),
-						(e) => {
-							console.error(e);
-							stop = true;
-							message.channel.send(
-								`Error fetching role \`${roleID}\`. Will continue.`,
-							);
-						},
-					);
-					if (stop) continue;
-					if (!member.manageable || !role.managed || !role.editable) {
-						message.channel.send(
-							`I lack sufficient permissions to assign <@&${roleID}> to <@${user.id}>. Will continue.`,
-						);
-						continue;
-					}
-					member.roles.add(role);
-				}
-			} else {
-				const nick = user.nick;
-				if (!nick) continue;
-				if (!member.manageable) {
-					message.channel.send(
-						`I lack sufficient permissions to rename <@${user.id}> to \`${nick}\`. Will continue.`,
-					);
-					continue;
-				}
-				member.setNickname(nick);
-			}
-		}
 	}
 
-	return `Finished loading backup \`${fileName}\`.`;
+	return `Loading backup \`${fileName}\`.`;
 };
 
 const functions: Map<
@@ -235,7 +232,7 @@ const run = (args: string[], message: Message, client: Client): string => {
 		return `Invalid syntax. Please use \`${prefix}help backup\` for more information.`;
 
 	const type = args.shift();
-	const func = functions[type];
+	const func = functions.get(type);
 	if (func) return func(args, message, client);
 	else
 		return `Invalid syntax. Please use \`${prefix}help backup\` for more information.`;

@@ -271,3 +271,4 @@ zsdoc/data
 
 auth*
 .vscode/**/*
+backups/**
