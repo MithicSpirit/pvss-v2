@@ -2,6 +2,7 @@ import help from './help';
 import tempmute from './tempmute';
 import stop from './stop';
 import backup from './backup';
+import lsroles from './lsroles';
 import { Message, Client } from 'discord.js';
 
 interface Command {
@@ -17,6 +18,7 @@ const command: Map<string, Command> = new Map([
 	['tempmute', tempmute],
 	['backup', backup],
 	['stop', stop],
+	['lsroles', lsroles],
 ]);
 
 export default command;
