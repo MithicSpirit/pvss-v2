@@ -20,16 +20,27 @@ const run = (args: string[], message: Message, client: Client): string => {
 	if (args.length < 2)
 		return `Invalid syntax. Please use \`${prefix}help tempmute\` for more information.`;
 
-	const user: Snowflake = /<@!(\d+)>/.exec(args.shift())[1];
+	let user: Snowflake;
+	try {
+		user = /<@!(\d+)>/.exec(args.shift())[1];
+	} catch {
+		return 'Invalid user.';
+	}
 
 	let time = Date.now();
-	for (const t of args) {
-		const res = new RegExp(timeRegex).exec(t);
-		const unit = timeMults.get(res[2]);
-		const val = Number(res[1]);
-		time += val * unit;
+	try {
+		for (const t of args) {
+			const res = new RegExp(timeRegex).exec(t);
+			const unit = timeMults.get(res[2]);
+			const val = Number(res[1]);
+			time += val * unit;
+		}
+		if (isNaN(time)) throw 'Invalid time.';
+	} catch {
+		return `${args.join(
+			' ',
+		)} is not a valid time. Please use \`${prefix}help tempmute\` for more information.`;
 	}
-	if (isNaN(time)) return `${args.join(' ')} is not a valid time.`;
 
 	const mutes = mgr.tempMutes('r');
 	const ind = mutes.findIndex((mute) => mute.id === user);
