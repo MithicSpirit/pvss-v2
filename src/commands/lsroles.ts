@@ -20,17 +20,19 @@ const run = (args: string[], message: Message, client: Client): string => {
 
 	const roles: RoleManager = client.guilds.resolve(guildID).roles;
 
-	let roleList = roles.cache.sort(
-		(role1: Role, role2: Role, name1, name2): number =>
-			role1.members.size - role2.members.size,
-	);
+	let roleList = roles.cache
+		.filter((role: Role) => role.name !== '@everyone')
+		.sort(
+			(role1: Role, role2: Role, name1, name2): number =>
+				role1.members.size - role2.members.size,
+		);
 	if (useFilter) roleList = roleList.filter(filter);
 
 	if (!roleList.size) return 'No roles found.';
 
 	let out = '';
 	for (const role of roleList.values()) {
-		out += `\`@${role.name}\`: ${role.members.size}\n`;
+		out += `\`${role.name}\`: ${role.members.size}\n`;
 	}
 
 	return out.trim();
