@@ -21,12 +21,11 @@ const getHierarchyLvl = (member: GuildMember): number => {
 	return permLvl;
 };
 
-export default (user: User, client: Client): number => {
-	const member: GuildMember = client.guilds
-		.resolve(config.guildID)
-		.member(user);
+export default async (user: User, client: Client): Promise<number> => {
+	const guild = await client.guilds.fetch(config.guildID);
+	const member: GuildMember = await guild.members.fetch(user);
 
-	if (member === member.guild.owner) return 5;
+	if (member === guild.owner) return 5;
 
 	const perms = member.permissions;
 	if (perms.has('ADMINISTRATOR')) return 4;

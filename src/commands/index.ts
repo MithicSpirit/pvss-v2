@@ -6,7 +6,7 @@ import lsroles from './lsroles';
 import { Message, Client } from 'discord.js';
 
 interface Command {
-	run: (args: string[], message: Message, client: Client) => string;
+	run: (args: string[], message: Message, client: Client) => Promise<string>;
 	help: string;
 	desc: string;
 	perms: number;
@@ -15,10 +15,10 @@ interface Command {
 
 const command: Map<string, Command> = new Map([
 	['help', help],
+	['lsroles', lsroles],
 	['tempmute', tempmute],
 	['backup', backup],
 	['stop', stop],
-	['lsroles', lsroles],
 ]);
 
 export default command;

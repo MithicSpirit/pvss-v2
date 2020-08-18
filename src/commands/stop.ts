@@ -3,18 +3,38 @@ import { Message, Client } from 'discord.js';
 import { config } from '../config';
 const prefix = config.prefix;
 
-const run = (args: string[], message: Message, client: Client): string => {
-	if (args.length != 0)
-		return `Invalid syntax. Please use \`${prefix}help stop\` for more information.`;
+const run = async (
+	args: string[],
+	message: Message,
+	client: Client,
+): Promise<string> => {
+	let errorPoint = 0;
+	try {
+		if (args.length != 0) {
+			errorPoint = 1;
+			throw 'Invalid syntax.';
+		}
 
-	const channel = message.channel.type;
-	if (channel != 'dm') return `\`${prefix}stop\` must be DMd to the bot.`;
+		const channel = message.channel.type;
+		if (channel != 'dm') {
+			errorPoint = 2;
+			throw 'Must be DM.';
+		}
 
-	mgr.backup();
-	message.channel.send('Bot stopping.').then(() => {
+		mgr.backup();
+		await message.channel.send('Bot stopping.');
 		client.destroy();
 		process.exit(0);
-	});
+	} catch (error) {
+		switch (errorPoint) {
+			default:
+				throw error;
+			case 1:
+				return `Invalid syntax. Please use \`${prefix}help stop\` for more information.`;
+			case 2:
+				return `\`${prefix}stop\` must be DMd to the bot.`;
+		}
+	}
 };
 
 const perms = 4;

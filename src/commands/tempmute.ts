@@ -14,21 +14,32 @@ const timeMults = new Map([
 const timeUnits = [...timeMults.keys()];
 const timeRegex = new RegExp(`(\\d+?)([${timeUnits.join('')}])`, 'gi');
 
-const run = (args: string[], message: Message, client: Client): string => {
-	const guild = client.guilds.resolve(config.guildID);
-
-	if (args.length < 2)
-		return `Invalid syntax. Please use \`${prefix}help tempmute\` for more information.`;
-
-	let user: Snowflake;
+const run = async (
+	args: string[],
+	message: Message,
+	client: Client,
+): Promise<string> => {
+	let errorPoint = 0;
+	let errorDesc = '';
 	try {
-		user = /<@!(\d+)>/.exec(args.shift())[1];
-	} catch {
-		return 'Invalid user.';
-	}
+		const guild = await client.guilds.fetch(config.guildID);
 
-	let time = Date.now();
-	try {
+		if (args.length < 2) {
+			errorPoint = 1;
+			throw 'Invalid syntax.';
+		}
+
+		const userArg = args.shift();
+
+		errorPoint = 2;
+		errorDesc = userArg;
+		const user: Snowflake = /<@!(\d+)>/.exec(userArg)[1];
+		errorPoint = 0;
+
+		let time = Date.now();
+
+		errorPoint = 3;
+		errorDesc = args.join(' ');
 		for (const t of args) {
 			const res = new RegExp(timeRegex).exec(t);
 			const unit = timeMults.get(res[2]);
@@ -36,34 +47,46 @@ const run = (args: string[], message: Message, client: Client): string => {
 			time += val * unit;
 		}
 		if (isNaN(time)) throw 'Invalid time.';
-	} catch {
-		return `${args.join(
-			' ',
-		)} is not a valid time. Please use \`${prefix}help tempmute\` for more information.`;
+		errorPoint = 0;
+
+		const mutes = mgr.tempMutes('r');
+		const ind = mutes.findIndex((mute) => mute.id === user);
+		if (ind !== -1) {
+			if (mutes[ind].time > time)
+				return `User <@${user}> is already tempmuted for more time than ${args.join(
+					' ',
+				)}.`;
+			else mgr.tempMutes('w-', mutes[ind]);
+		}
+
+		const member = await guild.members.fetch(user);
+
+		errorPoint = 4;
+		errorDesc = user;
+		if (!member.manageable) throw 'Role nonassignable.';
+		member.roles.add(muteRole);
+
+		const muteObj = {
+			id: user,
+			time: time,
+		};
+		mgr.tempMutes('w+', muteObj);
+
+		return `User <@${user}> has been muted for ${args.join(' ')}`;
+	} catch (error) {
+		switch (errorPoint) {
+			default:
+				throw error;
+			case 1:
+				return `Invalid syntax. Please use \`${prefix}help tempmute\` for more information.`;
+			case 2:
+				return `\`${errorDesc}\` is not a valid user.`;
+			case 3:
+				return `${errorDesc} is not a valid time. Please use \`${prefix}help tempmute\` for more information.`;
+			case 4:
+				return `There was an error with assigning the muted role to the user <@${errorDesc}>`;
+		}
 	}
-
-	const mutes = mgr.tempMutes('r');
-	const ind = mutes.findIndex((mute) => mute.id === user);
-	if (ind !== -1) {
-		if (mutes[ind].time > time)
-			return `User <@${user}> is already tempmuted for more time than ${args.join(
-				' ',
-			)}.`;
-		else mgr.tempMutes('w-', mutes[ind]);
-	}
-
-	const member = guild.member(user);
-	if (!member.manageable)
-		return `There was an error with assigning the muted role to the user <@${user}>`;
-	member.roles.add(muteRole);
-
-	const muteObj = {
-		id: user,
-		time: time,
-	};
-	mgr.tempMutes('w+', muteObj);
-
-	return `User <@${user}> has been muted for ${args.join(' ')}`;
 };
 
 const perms = 3;

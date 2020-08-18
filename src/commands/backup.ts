@@ -14,10 +14,10 @@ export interface Backup {
 	}[];
 }
 
-const getCategory = (role: Role, guild: Guild): string => {
+const getCategory = async (role: Role, guild: Guild): Promise<string> => {
 	let last: string;
 	for (const i of categories) {
-		const compare = guild.roles.resolve(i.id).comparePositionTo(role);
+		const compare = (await guild.roles.fetch(i.id)).comparePositionTo(role);
 		if (compare > 0) last = i.name;
 		else if (compare === 0) return i.name;
 		else return last;
@@ -25,201 +25,293 @@ const getCategory = (role: Role, guild: Guild): string => {
 	return last;
 };
 
-const createBackup = (
+const createBackup = async (
 	args: string[],
 	message: Message,
 	client: Client,
-): string => {
-	const guild = client.guilds.resolve(config.guildID);
-	const filters: string[] = [];
-	for (const i of args) {
-		const cat = categories.find((j) => j.name === i);
-		if (cat) filters.push(cat.name);
-		else if (i === 'nicks') filters.push('nicks');
-		else
-			return `Invalid category. Please use \`${prefix}help backup\` for a list of supported categories.`;
-	}
-
-	const backup: Backup = { filters, members: [] };
-	for (const i of guild.members.cache) {
-		try {
-			const id = i[0];
-			const member = { id, roles: {} };
-
-			const roles = i[1].roles.cache;
-			for (const j of roles) {
-				if (j[1].name === '@everyone') continue;
-				const cat = getCategory(j[1], guild);
-				if (filters.length && !filters.includes(cat)) continue;
-				if (!member.roles[cat]) member.roles[cat] = [];
-				member.roles[cat].push(j[1].id);
+): Promise<string> => {
+	let errorPoint = 0;
+	try {
+		const guild = await client.guilds.fetch(config.guildID);
+		const filters: string[] = [];
+		for (const i of args) {
+			const cat = categories.find((j) => j.name === i);
+			if (cat) filters.push(cat.name);
+			else if (i === 'nicks') filters.push('nicks');
+			else {
+				errorPoint = 1;
+				throw 'Invalid category.';
 			}
+		}
 
-			if (!filters.length || filters.includes('nicks')) {
-				member['nick'] = i[1].displayName;
+		const backup: Backup = { filters, members: [] };
+		for (const i of await guild.members.fetch()) {
+			try {
+				const id = i[0];
+				const member = { id, roles: {} };
+
+				const roles = i[1].roles.cache;
+				for (const j of roles) {
+					if (j[1].name === '@everyone') continue;
+					const cat = await getCategory(j[1], guild);
+					if (filters.length && !filters.includes(cat)) continue;
+					if (!member.roles[cat]) member.roles[cat] = [];
+					member.roles[cat].push(j[1].id);
+				}
+
+				if (!filters.length || filters.includes('nicks')) {
+					member['nick'] = i[1].displayName;
+				}
+
+				backup.members.push(member);
+			} catch (e) {
+				message.channel.send(
+					`Error while backing up <@${i[1].id}>. Will continue.`,
+				);
+				continue;
 			}
+		}
 
-			backup.members.push(member);
-		} catch (e) {
-			console.error(e);
-			return `Error while backing up <@${i[1].id}>.`;
+		if (!backup.filters.length) {
+			for (const i of categories) backup.filters.push(i.name);
+			backup.filters.push('nicks');
+		}
+
+		const date = new Date();
+		const fileName = date.toISOString();
+
+		fs.writeFileSync(
+			`./backups/${fileName}.json`,
+			JSON.stringify(backup),
+			'utf8',
+		);
+
+		return `Backup \`${fileName}\` completed!`;
+	} catch (error) {
+		switch (errorPoint) {
+			default:
+				throw error;
+			case 1:
+				return `Invalid category. Please use \`${prefix}help backup\` for a list of supported categories.`;
 		}
 	}
-
-	if (!backup.filters.length) {
-		for (const i of categories) backup.filters.push(i.name);
-		backup.filters.push('nicks');
-	}
-
-	const date = new Date();
-	const fileName = date.toISOString();
-
-	fs.writeFileSync(
-		`./backups/${fileName}.json`,
-		JSON.stringify(backup),
-		'utf8',
-	);
-
-	return `Backup \`${fileName}\` completed!`;
 };
 
-const listBackups = (
+const listBackups = async (
 	args: string[],
 	message: Message,
 	client: Client,
-): string => {
-	const fileList = fs.readdirSync('./backups/', 'utf8');
-	if (args.length) {
-		fileList.filter((file) => {
-			const types: string[] = JSON.parse(
-				fs.readFileSync(`./backups/${file}`, 'utf8'),
-			).filters;
+): Promise<string> => {
+	let errorPoint = 0;
+	try {
+		const fileList = fs.readdirSync('./backups/', 'utf8');
+		if (args.length) {
+			fileList.filter((file) => {
+				const types: string[] = JSON.parse(
+					fs.readFileSync(`./backups/${file}`, 'utf8'),
+				).filters;
 
-			let all = true;
-			for (const type of args) {
-				if (!types.includes(type)) all = false;
+				let all = true;
+				for (const type of args) {
+					if (!types.includes(type)) all = false;
+				}
+				return all;
+			});
+		}
+		if (fileList.length) {
+			let result = '';
+			for (const i of fileList) result += `\`${i.slice(0, -5)}\`\n`;
+			return result.trim();
+		}
+		errorPoint = 1;
+		throw 'No results.';
+	} catch (error) {
+		switch (errorPoint) {
+			default:
+				throw error;
+			case 1:
+				return 'No results found.';
+		}
+	}
+};
+
+const backupInfo = async (
+	args: string[],
+	message: Message,
+	client: Client,
+): Promise<string> => {
+	let errorPoint = 0;
+	let errorDesc = '';
+	try {
+		if (args.length !== 1) {
+			errorPoint = 1;
+			throw 'Invalid syntax.';
+		}
+
+		const fileName = args[0];
+
+		errorPoint = 2;
+		errorDesc = fileName;
+		const file = fs.readFileSync(`./backups/${fileName}.json`, 'utf8');
+		errorPoint = 0;
+
+		const backup: Backup = JSON.parse(file);
+
+		let msg = `\`${fileName}\`:`;
+		for (const i of backup.filters) {
+			msg += '\n  `' + i + '`';
+		}
+		return msg.trim();
+	} catch (error) {
+		switch (errorPoint) {
+			default:
+				throw error;
+			case 1:
+				return `Invalid syntax. Please use \`${prefix}help backup\` for more information.`;
+			case 2:
+				return `Backup \`${errorDesc}\` not found. Please use \`${prefix}backup list\` for a list of backups.`;
+		}
+	}
+};
+
+const applyBackup = async (
+	args: string[],
+	message: Message,
+	client: Client,
+): Promise<string> => {
+	let errorPoint = 0;
+	let errorDesc = '';
+	try {
+		const guild = await client.guilds.fetch(config.guildID);
+		const fileName = args.shift();
+
+		errorPoint = 1;
+		errorDesc = fileName;
+		const file = fs.readFileSync(`./backups/${fileName}.json`, 'utf8');
+		errorPoint = 0;
+
+		const backup: Backup = JSON.parse(file);
+
+		let filters = [...args];
+		for (const filter of filters)
+			if (!backup.filters.includes(filter)) {
+				errorPoint = 2;
+				errorDesc = fileName;
+				throw 'Missing filters.';
 			}
-			return all;
-		});
-	}
-	if (fileList.length) {
-		let result = '';
-		for (const i of fileList) result += `\`${i.slice(0, -5)}\`\n`;
-		return result.trim();
-	}
-	return 'No results found.';
-};
+		if (!filters.length) {
+			filters = backup.filters;
+		}
 
-const backupInfo = (
-	args: string[],
-	message: Message,
-	client: Client,
-): string => {
-	if (args.length !== 1)
-		return `Invalid syntax. Please use \`${prefix}help backup\` for more information.`;
+		for (const user of backup.members) {
+			try {
+				errorPoint = 3;
+				errorDesc = user.id;
+				const member = await guild.members.fetch(user.id);
+				errorPoint = 0;
 
-	const fileName = args[0];
-	let file: string;
-	try {
-		file = fs.readFileSync(`./backups/${fileName}.json`, 'utf8');
-	} catch (e) {
-		console.error(e);
-		return `Backup \`${fileName}\` not found. Please use \`${prefix}backup list\` for a list of backups.`;
-	}
-	const backup: Backup = JSON.parse(file);
-
-	let msg = `\`${fileName}\`:`;
-	for (const i of backup.filters) {
-		msg += '\n  `' + i + '`';
-	}
-	return msg.trim();
-};
-
-const applyBackup = (
-	args: string[],
-	message: Message,
-	client: Client,
-): string => {
-	const guild = client.guilds.resolve(config.guildID);
-	const fileName = args.shift();
-	let file: string;
-	try {
-		file = fs.readFileSync(`./backups/${fileName}.json`, 'utf8');
-	} catch (e) {
-		console.error(e);
-		return `Backup \`${fileName}\` not found. Please use \`${prefix}backup list\` for a list of backups.`;
-	}
-	const backup: Backup = JSON.parse(file);
-
-	let filters = [...args];
-	for (const filter of filters)
-		if (!backup.filters.includes(filter))
-			return `Backup \`${fileName}\` does not contain all specified filters. View \`${prefix}backup info \`${fileName}\` for a list of present filters.`;
-	if (!filters.length) {
-		filters = backup.filters;
-	}
-
-	for (const user of backup.members) {
-		guild.members.fetch(user.id).then(
-			(member) => {
 				for (const filter of filters) {
 					if (filter !== 'nicks') {
-						try {
-							for (const roleID of user.roles[filter]) {
-								let role: Role;
-								guild.roles.fetch(roleID).then(
-									(role) => {
-										if (
-											!member.manageable ||
-											!role.editable
-										) {
-											message.channel.send(
-												`I lack sufficient permissions to assign \`${role.name}\` to <@${user.id}>. Will continue.`,
-											);
-										} else
-											member.roles
-												.add(role)
-												.catch(console.error);
-									},
-									(e) => {
-										console.error(e);
+						for (const roleID of user.roles[filter]) {
+							try {
+								errorPoint = 4;
+								errorDesc = roleID;
+								const role = await guild.roles.fetch(roleID);
+								errorPoint = 0;
+
+								if (!member.manageable || !role.editable) {
+									errorPoint = 5;
+									errorDesc = role.name;
+									throw 'Insufficient permissions to assign role.';
+								} else errorPoint = 6;
+								errorDesc = role.name;
+								member.roles.add(role);
+								errorPoint = 0;
+							} catch (error) {
+								switch (errorPoint) {
+									default:
+										throw error;
+									case 4:
+										errorPoint = 0;
 										message.channel.send(
-											`Error fetching role \`${roleID}\`. Will continue.`,
+											`Error fetching role \`${errorDesc}\`. Will continue.`,
 										);
-									},
-								);
+										continue;
+									case 5:
+										errorPoint = 0;
+										message.channel.send(
+											`I lack sufficient permissions to assign \`${errorDesc}\` to <@${user.id}>. Will continue.`,
+										);
+										continue;
+									case 6:
+										errorPoint = 0;
+										message.channel.send(
+											`Error assigning role \`${errorDesc}\` to <@${user.id}>. Will continue.`,
+										);
+										continue;
+								}
 							}
-						} catch {
-							continue;
 						}
 					} else {
-						const nick = user.nick;
-						if (!nick) continue;
-						if (!member.manageable) {
-							message.channel.send(
-								`I lack sufficient permissions to rename <@${user.id}> to \`${nick}\`. Will continue.`,
-							);
-							continue;
+						try {
+							const nick = user.nick;
+							if (!nick) {
+								errorPoint = 7;
+								throw 'No nickname.';
+							}
+							if (!member.manageable) {
+								errorPoint = 8;
+								errorDesc = nick;
+								throw 'Insufficient permissions to rename.';
+							}
+							member.setNickname(nick);
+						} catch (error) {
+							switch (errorPoint) {
+								default:
+									throw error;
+								case 7:
+									errorPoint = 0;
+									continue;
+								case 8:
+									errorPoint = 0;
+									message.channel.send(
+										`I lack sufficient permissions to rename <@${user.id}> to \`${errorDesc}\`. Will continue.`,
+									);
+									continue;
+							}
 						}
-						member.setNickname(nick);
 					}
 				}
-			},
-			(e) => {
-				console.error(e);
-				message.channel.send(
-					`Error fetching user \`${user.id}\`. Will continue.`,
-				);
-			},
-		);
-	}
+			} catch (error) {
+				switch (errorPoint) {
+					default:
+						throw error;
+					case 3:
+						errorPoint = 0;
+						message.channel.send(
+							`Error fetching user \`${errorDesc}\`. Will continue.`,
+						);
+						continue;
+				}
+			}
+		}
 
-	return `Loading backup \`${fileName}\`.`;
+		return `Backup \`${fileName}\` applied.`;
+	} catch (error) {
+		switch (errorPoint) {
+			default:
+				throw error;
+			case 1:
+				return `Backup \`${errorDesc}\` not found. Please use \`${prefix}backup list\` for a list of backups.`;
+			case 2:
+				return `Backup \`${errorDesc}\` does not contain all specified filters. View \`${prefix}backup info \`${errorDesc}\` for a list of present filters.`;
+		}
+	}
 };
 
 const functions: Map<
 	string,
-	(args: string[], message: Message, client: Client) => string
+	(args: string[], message: Message, client: Client) => Promise<string>
 > = new Map([
 	['create', createBackup],
 	['list', listBackups],
@@ -227,15 +319,33 @@ const functions: Map<
 	['apply', applyBackup],
 ]);
 
-const run = (args: string[], message: Message, client: Client): string => {
-	if (args.length < 1)
-		return `Invalid syntax. Please use \`${prefix}help backup\` for more information.`;
+const run = async (
+	args: string[],
+	message: Message,
+	client: Client,
+): Promise<string> => {
+	let errorPoint = 0;
+	try {
+		if (args.length < 1) {
+			errorPoint = 1;
+			throw 'Invalid syntax.';
+		}
 
-	const type = args.shift();
-	const func = functions.get(type);
-	if (func) return func(args, message, client);
-	else
-		return `Invalid syntax. Please use \`${prefix}help backup\` for more information.`;
+		const type = args.shift();
+		const func = functions.get(type);
+		if (func) return func(args, message, client);
+		else {
+			errorPoint = 1;
+			throw 'Invalid syntax.';
+		}
+	} catch (error) {
+		switch (errorPoint) {
+			default:
+				throw error;
+			case 1:
+				return `Invalid syntax. Please use \`${prefix}help backup\` for more information.`;
+		}
+	}
 };
 
 const perms = 4; // Perm level from src/checkPerms.ts
