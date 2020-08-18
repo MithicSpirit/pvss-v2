@@ -15,7 +15,7 @@ client.on('ready', () => {
 		const cmd = args.shift();
 		try {
 			const reply = await runCommands(cmd, args, message, client);
-			message.channel.send(reply);
+			await message.channel.send(reply);
 		} catch (error) {
 			console.error(error);
 			message.channel.send(
