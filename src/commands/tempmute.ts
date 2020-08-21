@@ -33,7 +33,7 @@ const run = async (
 
 		errorPoint = 2;
 		errorDesc = userArg;
-		const user: Snowflake = /<@!(\d+)>/.exec(userArg)[1];
+		const user: Snowflake = /<@!?(\d+)>/.exec(userArg)[1];
 		errorPoint = 0;
 
 		let time = Date.now();
